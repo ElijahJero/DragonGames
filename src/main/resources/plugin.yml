@@ -1,0 +1,16 @@
+name: dragonGames
+version: '1.0-SNAPSHOT'
+main: org.galaxystudios.dragonGames.DragonGames
+api-version: '1.21'
+softdepend: [dynmap, WorldGuard]
+
+commands:
+  dragongames:
+    description: DragonGames admin command
+    usage: /<command> <sethome|start|stop|status|returnegg|setholder|clearholder|reload>
+    permission: dragongames.admin
+
+permissions:
+  dragongames.admin:
+    description: Allows managing DragonGames
+    default: op

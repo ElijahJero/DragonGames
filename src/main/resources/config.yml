@@ -1,0 +1,69 @@
+# DragonGames - Dragon Egg Bounty configuration
+
+# Location to return the egg to if the holder is inactive.
+# World must exist.
+return-location:
+  world: world
+  x: 0.5
+  y: 100.0
+  z: 0.5
+  yaw: 0.0
+  pitch: 0.0
+
+# A player must have at least this much playtime per week while holding the egg.
+# If they don't, the egg gets returned to return-location.
+required-playtime-per-week-seconds: 7200
+
+# How often to check inactivity requirements.
+check-interval-seconds: 300
+
+# Buffs applied while holding the egg.
+# Valid potion names: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/potion/PotionEffectType.html
+buffs:
+  - type: SPEED
+    amplifier: 0
+  - type: DAMAGE_RESISTANCE
+    amplifier: 0
+  - type: INCREASE_DAMAGE
+    amplifier: 0
+
+# Broadcast messages/effects
+announce:
+  capture: true
+  transfer-on-death: true
+  return-on-inactive: true
+
+# Dynmap marker settings (requires Dynmap plugin)
+dynmap:
+  enabled: true
+  marker-set-id: dragongames
+  marker-set-label: Dragon Egg
+  marker-id: dragon-egg-holder
+  marker-label: "Dragon Egg Holder"
+  icon: "portal"   # must exist on dynmap
+  update-seconds: 5
+
+# If true, players holding the egg can be damaged anywhere.
+# This doesn't fully bypass hard region flags, but it cancels many common protections:
+# - WorldGuard: we use the WG API if present, and also cancel its damage protection by allowing damage.
+# - vanilla: we don't override invulnerability/creative.
+pvp-override-enabled: true
+
+# Dragon Games only run once started (set by /dragongames sethome)
+game:
+  enabled: false
+
+# Discord announcements
+#
+# Discord doesn't support arbitrary WebSocket pushes for webhooks.
+# The standard way to announce from a server/plugin is a webhook URL.
+discord:
+  enabled: false
+  webhook-url: ""   # e.g. https://discord.com/api/webhooks/....
+
+  # Optional prefix for all messages
+  prefix: "[DragonEgg] "
+
+# Debug logging
+debug:
+  enabled: false
