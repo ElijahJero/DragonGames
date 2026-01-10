@@ -169,7 +169,7 @@ public final class EggManager {
         w.getBlockAt(loc).setType(EGG_MATERIAL, false);
 
         if (message != null && !message.isBlank()) {
-            Bukkit.broadcastMessage(ChatColor.DARK_PURPLE + "[DragonEgg] " + ChatColor.LIGHT_PURPLE + message);
+            Bukkit.broadcastMessage(ChatColor.DARK_PURPLE + "[DragonGames] " + ChatColor.LIGHT_PURPLE + message);
         }
 
         // DRAGON_BREATH on 1.21+ requires a Float data parameter; use 0f for default
@@ -201,7 +201,7 @@ public final class EggManager {
             case ADMIN -> msg = player.getName() + " was chosen as Dragon Egg holder.";
             default -> msg = player.getName() + " is now the Dragon Egg holder.";
         }
-        Bukkit.broadcastMessage(ChatColor.DARK_PURPLE + "[DragonEgg] " + ChatColor.LIGHT_PURPLE + msg);
+        Bukkit.broadcastMessage(ChatColor.DARK_PURPLE + "[DragonGames] " + ChatColor.LIGHT_PURPLE + msg);
     }
 
     private void playCaptureEffects(Location loc) {

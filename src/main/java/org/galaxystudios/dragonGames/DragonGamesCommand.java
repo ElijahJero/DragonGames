@@ -43,17 +43,17 @@ public final class DragonGamesCommand implements CommandExecutor, TabCompleter {
                 Location loc = p.getLocation();
                 plugin.setReturnLocation(loc);
                 plugin.startDragonGames(loc);
-                sender.sendMessage(ChatColor.DARK_PURPLE + "[DragonEgg] " + ChatColor.LIGHT_PURPLE + "Home set and Dragon Games started.");
+                sender.sendMessage(ChatColor.DARK_PURPLE + "[DragonGames] " + ChatColor.LIGHT_PURPLE + "Home set and Dragon Games started.");
                 return true;
             }
             case "start" -> {
                 plugin.startDragonGames(plugin.getReturnLocation());
-                sender.sendMessage(ChatColor.DARK_PURPLE + "[DragonEgg] " + ChatColor.LIGHT_PURPLE + "Dragon Games started.");
+                sender.sendMessage(ChatColor.DARK_PURPLE + "[DragonGames] " + ChatColor.LIGHT_PURPLE + "Dragon Games started.");
                 return true;
             }
             case "stop" -> {
                 plugin.stopDragonGames();
-                sender.sendMessage(ChatColor.DARK_PURPLE + "[DragonEgg] " + ChatColor.LIGHT_PURPLE + "Dragon Games stopped.");
+                sender.sendMessage(ChatColor.DARK_PURPLE + "[DragonGames] " + ChatColor.LIGHT_PURPLE + "Dragon Games stopped.");
                 return true;
             }
             case "status" -> {
@@ -62,7 +62,7 @@ public final class DragonGamesCommand implements CommandExecutor, TabCompleter {
                 Player online = holder == null ? null : Bukkit.getPlayer(holder);
                 if (online != null) holderName = online.getName() + " (online)";
 
-                sender.sendMessage(ChatColor.DARK_PURPLE + "[DragonEgg] " + ChatColor.LIGHT_PURPLE +
+                sender.sendMessage(ChatColor.DARK_PURPLE + "[DragonGames] " + ChatColor.LIGHT_PURPLE +
                         "enabled=" + plugin.isGameEnabled() + ", holder=" + holderName +
                         ", weeklyPlaySeconds=" + plugin.getState().getHolderWeeklyPlaySeconds());
                 if (plugin.isDebugEnabled()) {
@@ -72,7 +72,7 @@ public final class DragonGamesCommand implements CommandExecutor, TabCompleter {
             }
             case "returnegg" -> {
                 plugin.clearHolderAndReturnEgg();
-                sender.sendMessage(ChatColor.DARK_PURPLE + "[DragonEgg] " + ChatColor.LIGHT_PURPLE + "Egg returned to home.");
+                sender.sendMessage(ChatColor.DARK_PURPLE + "[DragonGames] " + ChatColor.LIGHT_PURPLE + "Egg returned to home.");
                 return true;
             }
             case "setholder" -> {
@@ -86,17 +86,17 @@ public final class DragonGamesCommand implements CommandExecutor, TabCompleter {
                     return true;
                 }
                 plugin.setHolderByAdmin(target);
-                sender.sendMessage(ChatColor.DARK_PURPLE + "[DragonEgg] " + ChatColor.LIGHT_PURPLE + "Holder set to " + target.getName());
+                sender.sendMessage(ChatColor.DARK_PURPLE + "[DragonGames] " + ChatColor.LIGHT_PURPLE + "Holder set to " + target.getName());
                 return true;
             }
             case "clearholder" -> {
                 plugin.clearHolderOnly();
-                sender.sendMessage(ChatColor.DARK_PURPLE + "[DragonEgg] " + ChatColor.LIGHT_PURPLE + "Cleared holder (no egg spawned).");
+                sender.sendMessage(ChatColor.DARK_PURPLE + "[DragonGames] " + ChatColor.LIGHT_PURPLE + "Cleared holder (no egg spawned).");
                 return true;
             }
             case "reload" -> {
                 plugin.reloadConfig();
-                sender.sendMessage(ChatColor.DARK_PURPLE + "[DragonEgg] " + ChatColor.LIGHT_PURPLE + "Reloaded config.yml (state.yml unchanged).");
+                sender.sendMessage(ChatColor.DARK_PURPLE + "[DragonGames] " + ChatColor.LIGHT_PURPLE + "Reloaded config.yml (state.yml unchanged).");
                 return true;
             }
             default -> {
@@ -107,7 +107,7 @@ public final class DragonGamesCommand implements CommandExecutor, TabCompleter {
     }
 
     private void sendHelp(CommandSender sender, String label) {
-        sender.sendMessage(ChatColor.DARK_PURPLE + "[DragonEgg] " + ChatColor.LIGHT_PURPLE + "Commands:");
+        sender.sendMessage(ChatColor.DARK_PURPLE + "[DragonGames] " + ChatColor.LIGHT_PURPLE + "Commands:");
         sender.sendMessage(ChatColor.LIGHT_PURPLE + "/" + label + " sethome" + ChatColor.GRAY + " - set egg home here and start games");
         sender.sendMessage(ChatColor.LIGHT_PURPLE + "/" + label + " start" + ChatColor.GRAY + " - start games");
         sender.sendMessage(ChatColor.LIGHT_PURPLE + "/" + label + " stop" + ChatColor.GRAY + " - stop games");

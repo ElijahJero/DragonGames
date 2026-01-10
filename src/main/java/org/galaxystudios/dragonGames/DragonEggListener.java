@@ -36,7 +36,7 @@ public final class DragonEggListener implements Listener {
     private void pickupEggBlock(Player player, org.bukkit.block.Block block) {
         block.setType(Material.AIR, false);
         eggs.setHolder(player, EggManager.EggEventReason.PICKUP);
-        plugin.getDiscord().announceAsync(plugin.getConfig().getString("discord.prefix", "[DragonEgg] ") +
+        plugin.getDiscord().announceAsync(plugin.getConfig().getString("discord.prefix", "[DragonGames] ") +
                 player.getName() + " captured the Dragon Egg!");
     }
 
@@ -69,7 +69,7 @@ public final class DragonEggListener implements Listener {
         Player p = e.getPlayer();
         Bukkit.getScheduler().runTask(plugin, () -> {
             eggs.setHolder(p, EggManager.EggEventReason.PICKUP);
-            plugin.getDiscord().announceAsync(plugin.getConfig().getString("discord.prefix", "[DragonEgg] ") +
+            plugin.getDiscord().announceAsync(plugin.getConfig().getString("discord.prefix", "[DragonGames] ") +
                     p.getName() + " captured the Dragon Egg!");
             e.getItem().remove();
         });
@@ -83,7 +83,7 @@ public final class DragonEggListener implements Listener {
         UUID holder = eggs.getHolder();
         if (holder != null && holder.equals(e.getPlayer().getUniqueId())) {
             e.setCancelled(true);
-            e.getPlayer().sendMessage(ChatColor.DARK_PURPLE + "[DragonEgg] " + ChatColor.LIGHT_PURPLE + "You can't drop the Dragon Egg.");
+            e.getPlayer().sendMessage(ChatColor.DARK_PURPLE + "[DragonGames] " + ChatColor.LIGHT_PURPLE + "You can't drop the Dragon Egg.");
             Bukkit.getScheduler().runTask(plugin, () -> eggs.ensureEggInInventory(e.getPlayer()));
         }
     }
@@ -92,7 +92,7 @@ public final class DragonEggListener implements Listener {
     public void onBlockPlace(org.bukkit.event.block.BlockPlaceEvent e) {
         if (e.getBlockPlaced().getType() != EggManager.EGG_MATERIAL) return;
         e.setCancelled(true);
-        e.getPlayer().sendMessage(ChatColor.DARK_PURPLE + "[DragonEgg] " + ChatColor.LIGHT_PURPLE + "You can't place the Dragon Egg.");
+        e.getPlayer().sendMessage(ChatColor.DARK_PURPLE + "[DragonGames] " + ChatColor.LIGHT_PURPLE + "You can't place the Dragon Egg.");
         Bukkit.getScheduler().runTask(plugin, () -> eggs.ensureEggInInventory(e.getPlayer()));
     }
 
@@ -205,13 +205,13 @@ public final class DragonEggListener implements Listener {
         if (killer != null) {
             Bukkit.getScheduler().runTask(plugin, () -> {
                 eggs.setHolder(killer, EggManager.EggEventReason.TRANSFER_ON_DEATH);
-                plugin.getDiscord().announceAsync(plugin.getConfig().getString("discord.prefix", "[DragonEgg] ") +
+                plugin.getDiscord().announceAsync(plugin.getConfig().getString("discord.prefix", "[DragonGames] ") +
                         killer.getName() + " claimed the Dragon Egg by killing " + dead.getName() + "!");
             });
         } else {
             Bukkit.getScheduler().runTask(plugin, () -> {
                 eggs.returnEggToReturnLocation(dead.getName() + " died, and the Dragon Egg returned to the altar!");
-                plugin.getDiscord().announceAsync(plugin.getConfig().getString("discord.prefix", "[DragonEgg] ") +
+                plugin.getDiscord().announceAsync(plugin.getConfig().getString("discord.prefix", "[DragonGames] ") +
                         "The Dragon Egg returned to home because " + dead.getName() + " died.");
             });
         }

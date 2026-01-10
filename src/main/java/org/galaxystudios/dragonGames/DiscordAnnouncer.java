@@ -46,7 +46,7 @@ public final class DiscordAnnouncer {
         conn.setRequestProperty("Content-Type", "application/json");
         conn.setRequestProperty("User-Agent", "DragonGames/DiscordWebhook");
 
-        String stripped = stripPrefix(content, plugin.getConfig().getString("discord.prefix", "[DragonEgg] "));
+        String stripped = stripPrefix(content, plugin.getConfig().getString("discord.prefix", "[DragonGames] "));
         String escaped = escapeJson(stripped);
         String description = trimToLength(escaped, 4096);
         String json = buildEmbedPayload(description);
