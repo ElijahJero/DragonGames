@@ -62,7 +62,7 @@ discord:
   webhook-url: ""   # e.g. https://discord.com/api/webhooks/....
 
   # Optional prefix for all messages
-  prefix: "[DragonEgg] "
+  prefix: "[DragonGames] "
 
 # Debug logging
 debug:

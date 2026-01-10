@@ -46,12 +46,15 @@ public final class EggManager {
     }
 
     public void ensureEggInInventory(Player player) {
-        if (playerHasEgg(player)) return;
-        giveEggToPlayer(player);
+        normalizeEggInventory(player);
     }
 
     public void giveEggToPlayer(Player player) {
+        normalizeEggInventory(player);
         PlayerInventory inv = player.getInventory();
+        // If player already has an egg, don't add more
+        if (countEggs(inv) >= 1) return;
+
         HashMap<Integer, ItemStack> leftover = inv.addItem(new ItemStack(EGG_MATERIAL, 1));
         if (!leftover.isEmpty()) {
             ItemStack off = inv.getItemInOffHand();
@@ -76,6 +79,35 @@ public final class EggManager {
         }
         ItemStack off = inv.getItemInOffHand();
         if (off != null && off.getType() == EGG_MATERIAL) inv.setItemInOffHand(null);
+    }
+
+    public void normalizeEggInventory(Player player) {
+        PlayerInventory inv = player.getInventory();
+        int eggsFound = countEggs(inv);
+        if (eggsFound > 1) {
+            clearEggs(player);
+            eggsFound = 0;
+        }
+        if (eggsFound == 0 && plugin.getState().getHolder() != null && plugin.getState().getHolder().equals(player.getUniqueId())) {
+            // holder missing egg: add one respecting full-inventory rules
+            HashMap<Integer, ItemStack> leftover = inv.addItem(new ItemStack(EGG_MATERIAL, 1));
+            if (!leftover.isEmpty()) {
+                ItemStack off = inv.getItemInOffHand();
+                if (off == null || off.getType() == Material.AIR) {
+                    inv.setItemInOffHand(new ItemStack(EGG_MATERIAL, 1));
+                } else {
+                    ItemStack inHand = inv.getItemInMainHand();
+                    if (inHand != null && inHand.getType() != Material.AIR) {
+                        player.getWorld().dropItemNaturally(player.getLocation(), inHand.clone());
+                    }
+                    inv.setItemInMainHand(new ItemStack(EGG_MATERIAL, 1));
+                }
+            }
+        }
+        if (eggsFound >= 1 && (plugin.getState().getHolder() == null || !plugin.getState().getHolder().equals(player.getUniqueId()))) {
+            // non-holder has egg: remove it
+            clearEggs(player);
+        }
     }
 
     public void setHolder(Player player, EggEventReason reason) {

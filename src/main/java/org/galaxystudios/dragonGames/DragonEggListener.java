@@ -16,7 +16,10 @@ import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
+import com.sk89q.worldguard.bukkit.protection.events.DisallowedPVPEvent;
 
 import java.util.UUID;
 
@@ -103,28 +106,35 @@ public final class DragonEggListener implements Listener {
         boolean involvesEgg = (current != null && current.getType() == EggManager.EGG_MATERIAL) ||
                 (cursor != null && cursor.getType() == EggManager.EGG_MATERIAL);
 
-        if (involvesEgg) {
-            // Prevent putting egg into containers; ensure only the holder keeps it
-            if (holder == null || !holder.equals(p.getUniqueId())) {
-                e.setCancelled(true);
-                return;
-            }
-            // Cancel attempts to move egg into other inventories (e.g., chests)
-            if (e.getClickedInventory() != p.getInventory()) {
-                e.setCancelled(true);
-                Bukkit.getScheduler().runTask(plugin, () -> eggs.ensureEggInInventory(p));
-                return;
-            }
-            // Prevent moving within inventory too; just keep it with player
+        if (!involvesEgg) return;
+
+        // Only the current holder can move the egg at all
+        if (holder == null || !holder.equals(p.getUniqueId())) {
             e.setCancelled(true);
             Bukkit.getScheduler().runTask(plugin, () -> eggs.ensureEggInInventory(p));
+            return;
         }
 
-        if (holder == null || !holder.equals(p.getUniqueId())) return;
+        Inventory clicked = e.getClickedInventory();
+        PlayerInventory pinv = p.getInventory();
 
-        // ...existing code handling for holder movements...
-        if ((current != null && current.getType() == EggManager.EGG_MATERIAL) ||
-                (cursor != null && cursor.getType() == EggManager.EGG_MATERIAL)) {
+        // Block moving the egg to any non-player inventory (chests, anvils, etc.)
+        if (clicked != null && clicked != pinv) {
+            e.setCancelled(true);
+            Bukkit.getScheduler().runTask(plugin, () -> eggs.ensureEggInInventory(p));
+            return;
+        }
+
+        // Allow rearranging inside the player's own inventory/offhand
+        // but disallow dropping/taking out via hotbar swap/number keys to container
+        if (e.getAction().name().contains("DROP")) {
+            e.setCancelled(true);
+            Bukkit.getScheduler().runTask(plugin, () -> eggs.ensureEggInInventory(p));
+            return;
+        }
+
+        // If the click targets outside slots (e.g. creative drop), cancel
+        if (clicked == null) {
             e.setCancelled(true);
             Bukkit.getScheduler().runTask(plugin, () -> eggs.ensureEggInInventory(p));
         }
@@ -133,9 +143,20 @@ public final class DragonEggListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onInventoryDrag(InventoryDragEvent e) {
         if (!(e.getWhoClicked() instanceof Player p)) return;
-        ItemStack old = e.getOldCursor();
-        for (ItemStack it : e.getNewItems().values()) {
-            if ((old != null && old.getType() == EggManager.EGG_MATERIAL) || (it != null && it.getType() == EggManager.EGG_MATERIAL)) {
+        UUID holder = eggs.getHolder();
+        ItemStack cursor = e.getOldCursor();
+        if (cursor == null || cursor.getType() != EggManager.EGG_MATERIAL) return;
+
+        // Only holder can drag the egg; only within their own inventory slots
+        if (holder == null || !holder.equals(p.getUniqueId())) {
+            e.setCancelled(true);
+            Bukkit.getScheduler().runTask(plugin, () -> eggs.ensureEggInInventory(p));
+            return;
+        }
+
+        // If any target slot is outside player inventory, block
+        for (int rawSlot : e.getRawSlots()) {
+            if (rawSlot >= p.getInventory().getSize() + 5) { // includes crafting grid + armor/offhand margin
                 e.setCancelled(true);
                 Bukkit.getScheduler().runTask(plugin, () -> eggs.ensureEggInInventory(p));
                 return;
@@ -146,13 +167,21 @@ public final class DragonEggListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onJoin(PlayerJoinEvent e) {
         Player p = e.getPlayer();
-        if (eggs.getHolder() != null && eggs.getHolder().equals(p.getUniqueId())) {
+        UUID holder = eggs.getHolder();
+
+        // If player is supposed to be holder, ensure exactly one egg + buffs
+        if (holder != null && holder.equals(p.getUniqueId())) {
             Bukkit.getScheduler().runTask(plugin, () -> {
-                eggs.ensureEggInInventory(p);
+                eggs.clearEggs(p);
+                eggs.giveEggToPlayer(p);
                 eggs.applyEggBuffs(p);
                 plugin.getDynmap().updateMarker(p);
             });
+            return;
         }
+
+        // If player is not holder, strip any eggs they may have
+        Bukkit.getScheduler().runTask(plugin, () -> eggs.clearEggs(p));
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -188,7 +217,7 @@ public final class DragonEggListener implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onDamage(EntityDamageByEntityEvent e) {
         if (!plugin.isPvpOverrideEnabled()) return;
 
@@ -200,6 +229,19 @@ public final class DragonEggListener implements Listener {
 
         if (e.isCancelled()) {
             e.setCancelled(false);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onWorldGuardDisallowedPvp(DisallowedPVPEvent e) {
+        if (!plugin.isPvpOverrideEnabled()) return;
+        Player vp = e.getDefender();
+        if (vp == null) return;
+
+        UUID holder = eggs.getHolder();
+        if (holder != null && holder.equals(vp.getUniqueId())) {
+            plugin.logDebug("Allowing PVP on egg holder via WorldGuard hook for " + vp.getName());
+            e.setCancelled(true);
         }
     }
 }
