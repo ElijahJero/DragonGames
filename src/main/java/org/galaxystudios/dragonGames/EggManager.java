@@ -172,7 +172,8 @@ public final class EggManager {
             Bukkit.broadcastMessage(ChatColor.DARK_PURPLE + "[DragonEgg] " + ChatColor.LIGHT_PURPLE + message);
         }
 
-        w.spawnParticle(Particle.DRAGON_BREATH, loc, 200, 1.0, 1.0, 1.0, 0.02);
+        // DRAGON_BREATH on 1.21+ requires a Float data parameter; use 0f for default
+        w.spawnParticle(Particle.DRAGON_BREATH, loc, 200, 1.0, 1.0, 1.0, 0.02, 0f);
         w.playSound(loc, Sound.ENTITY_ENDER_DRAGON_GROWL, 1.0f, 0.8f);
         w.strikeLightningEffect(loc);
     }
@@ -206,7 +207,8 @@ public final class EggManager {
     private void playCaptureEffects(Location loc) {
         if (loc == null || loc.getWorld() == null) return;
         World w = loc.getWorld();
-        w.spawnParticle(Particle.DRAGON_BREATH, loc, 150, 0.8, 0.8, 0.8, 0.02);
+        // DRAGON_BREATH on 1.21+ requires a Float data parameter; use 0f for default
+        w.spawnParticle(Particle.DRAGON_BREATH, loc, 150, 0.8, 0.8, 0.8, 0.02, 0f);
         w.spawnParticle(Particle.PORTAL, loc, 300, 1.2, 1.2, 1.2, 0.1);
         w.playSound(loc, Sound.ENTITY_ENDER_DRAGON_AMBIENT, 1.0f, 1.0f);
     }
