@@ -3,9 +3,11 @@ package org.galaxystudios.dragonGames;
 import org.bukkit.Bukkit;
 
 import javax.net.ssl.HttpsURLConnection;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 
 /**
  * Sends game updates to Discord.
@@ -42,13 +44,12 @@ public final class DiscordAnnouncer {
         conn.setRequestMethod("POST");
         conn.setDoOutput(true);
         conn.setRequestProperty("Content-Type", "application/json");
+        conn.setRequestProperty("User-Agent", "DragonGames/DiscordWebhook");
 
-        String safe = content
-                .replace("\\", "\\\\")
-                .replace("\"", "\\\"");
-
-        // minimal webhook payload
-        String json = "{\"content\":\"" + safe + "\"}";
+        String stripped = stripPrefix(content, plugin.getConfig().getString("discord.prefix", "[DragonEgg] "));
+        String escaped = escapeJson(stripped);
+        String description = trimToLength(escaped, 4096);
+        String json = buildEmbedPayload(description);
         byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
 
         conn.setFixedLengthStreamingMode(bytes.length);
@@ -60,10 +61,51 @@ public final class DiscordAnnouncer {
 
         int code = conn.getResponseCode();
         if (code < 200 || code >= 300) {
-            throw new IllegalStateException("Discord webhook returned HTTP " + code);
+            String errorBody = readBody(conn);
+            throw new IllegalStateException("Discord webhook returned HTTP " + code + (errorBody.isEmpty() ? "" : ": " + errorBody));
         }
 
         conn.disconnect();
     }
-}
 
+    private String buildEmbedPayload(String description) {
+        String safeDescription = description == null ? "" : description;
+        return "{\"embeds\":[{" +
+                "\"title\":\"Dragon Games Update\"," +
+                "\"description\":\"" + safeDescription + "\"," +
+                "\"color\":" + 0x9b59b6 + ',' +
+                "\"timestamp\":\"" + Instant.now().toString() + "\"" +
+                "}]}";
+    }
+
+    private String stripPrefix(String content, String prefix) {
+        if (content == null) return "";
+        if (prefix == null || prefix.isBlank()) return content;
+        return content.startsWith(prefix) ? content.substring(prefix.length()) : content;
+    }
+
+    private String trimToLength(String value, int max) {
+        if (value == null) return "";
+        if (value.length() <= max) return value;
+        plugin.getLogger().warning("Discord message truncated to " + max + " characters for embed.");
+        return value.substring(0, max - 1) + "\u2026"; // ellipsis
+    }
+
+    private String escapeJson(String value) {
+        if (value == null) return "";
+        return value
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\r", "")
+                .replace("\n", "\\n");
+    }
+
+    private String readBody(HttpsURLConnection conn) {
+        try (InputStream in = conn.getErrorStream() != null ? conn.getErrorStream() : conn.getInputStream()) {
+            if (in == null) return "";
+            return new String(in.readAllBytes(), StandardCharsets.UTF_8).trim();
+        } catch (Exception ignored) {
+            return "";
+        }
+    }
+}
