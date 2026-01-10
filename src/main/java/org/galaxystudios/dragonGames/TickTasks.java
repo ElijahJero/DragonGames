@@ -67,7 +67,11 @@ public final class TickTasks {
         Bukkit.getScheduler().runTaskTimer(plugin, () -> {
             if (!plugin.getDynmap().isAvailable()) return;
             Player hp = eggs.getOnlineHolder();
-            if (hp != null) plugin.getDynmap().updateMarker(hp);
+            if (hp != null) {
+                plugin.getDynmap().updateMarker(hp);
+            } else {
+                plugin.getDynmap().refreshLastMarker();
+            }
         }, dynUpdate, dynUpdate);
     }
 }
