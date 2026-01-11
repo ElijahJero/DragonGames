@@ -148,6 +148,10 @@ public final class PluginState {
         this.lastTickEpochSeconds = epochSeconds;
     }
 
+    public boolean isWeekExpired() {
+        return startOfWeekEpochSeconds() != weekStartEpochSeconds;
+    }
+
     private long now() {
         return Instant.now().getEpochSecond();
     }

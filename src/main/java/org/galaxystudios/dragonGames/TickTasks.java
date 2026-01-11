@@ -19,7 +19,7 @@ public final class TickTasks {
         long intervalTicks = Math.max(20L, plugin.getConfig().getLong("check-interval-seconds", 300L) * 20L);
 
         Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-            plugin.getState().resetWeeklyIfNeeded();
+            boolean weekExpired = plugin.getState().isWeekExpired();
 
             // Persist absolute time marker for accurate delta across restarts.
             long now = System.currentTimeMillis() / 1000L;
@@ -29,6 +29,7 @@ public final class TickTasks {
             plugin.getState().setLastTickEpochSeconds(now);
 
             if (!plugin.isGameEnabled()) {
+                if (weekExpired) plugin.getState().resetWeek();
                 plugin.getState().save();
                 return;
             }
@@ -36,8 +37,22 @@ public final class TickTasks {
             UUID holder = eggs.getHolder();
             if (holder == null) {
                 plugin.getDynmap().clearMarker();
+                if (weekExpired) plugin.getState().resetWeek();
                 plugin.getState().save();
                 return;
+            }
+
+            long required = eggs.getRequiredWeeklySeconds();
+            if (weekExpired) {
+                if (plugin.getState().getHolderWeeklyPlaySeconds() < required) {
+                    eggs.returnEggToReturnLocation("The Dragon Egg returned because the weekly playtime requirement was not met.");
+                    plugin.getDiscord().announceAsync(plugin.getConfig().getString("discord.prefix", "[DragonEgg] ") +
+                            "The Dragon Egg returned home because the weekly playtime requirement was not met.");
+                    plugin.getState().resetWeek();
+                    plugin.getState().save();
+                    return;
+                }
+                plugin.getState().resetWeek();
             }
 
             Player hp = Bukkit.getPlayer(holder);
@@ -48,16 +63,6 @@ public final class TickTasks {
                 eggs.ensureEggInInventory(hp);
                 eggs.applyEggBuffs(hp);
                 plugin.getDynmap().updateMarker(hp);
-            }
-
-            long required = eggs.getRequiredWeeklySeconds();
-            if (plugin.getState().getHolderWeeklyPlaySeconds() < required) {
-                long lastSeen = plugin.getState().getHolderLastSeenEpochSeconds();
-                if (now - lastSeen > required) {
-                    eggs.returnEggToReturnLocation("The Dragon Egg returned because its holder was inactive!");
-                    plugin.getDiscord().announceAsync(plugin.getConfig().getString("discord.prefix", "[DragonEgg] ") +
-                            "The Dragon Egg returned to home due to inactivity.");
-                }
             }
 
             plugin.getState().save();
